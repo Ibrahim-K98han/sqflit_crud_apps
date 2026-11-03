@@ -14,6 +14,12 @@ class _CrudState extends State<Crud> {
   TextEditingController ageController = TextEditingController();
   int? editingId;
   List<Map<String, dynamic>> students = [];
+
+  initState() {
+    super.initState();
+    readStudent();
+  }
+
   @override
   void dispose() {
     super.dispose();
@@ -80,9 +86,24 @@ class _CrudState extends State<Crud> {
     readStudent();
   }
 
-  void startEditing(Map<String, dynamic> student) {}
+  void startEditing(Map<String, dynamic> student) {
+    setState(() {
+      editingId = student['id'];
+      nameController.text = student['name'];
+      ageController.text = student['age'].toString();
+    });
+  }
 
-  void saveButtonPressed() {}
+  void saveButtonPressed() {
+    if (nameController.text.isEmpty || ageController.text.isEmpty) {
+      return;
+    }
+    if (editingId == null) {
+      addStudent();
+    } else {
+      updateStudent();
+    }
+  }
 
   void clearBoxes() {
     setState(() {
@@ -117,6 +138,36 @@ class _CrudState extends State<Crud> {
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(8.0)),
                 ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: saveButtonPressed,
+              child: Text(editingId == null ? 'Add Student' : 'Update Student'),
+            ),
+            Expanded(
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: students.length,
+                itemBuilder: (context, index) {
+                  final student = students[index];
+                  return ListTile(
+                    title: Text(student['name']),
+                    subtitle: Text('Age: ${student['age']}'),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit),
+                          onPressed: () => startEditing(student),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete),
+                          onPressed: () => deleteStudent(student['id']),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
           ],
